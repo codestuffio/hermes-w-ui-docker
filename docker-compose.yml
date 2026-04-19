@@ -9,7 +9,6 @@ services:
     container_name: hermes-agent
     restart: unless-stopped
     command: gateway run
-    user: "10000"
     ports:
       - "8642:8642"
     volumes:
@@ -31,8 +30,6 @@ services:
         limits:
           memory: 4G
           cpus: "2.0"
-    security_opt:
-      - no-new-privileges:true
     networks:
       - hermes-internal
 
