@@ -13,14 +13,18 @@ services:
       - "8642:8642"
     volumes:
       - hermes-home:/opt/data
+      - hermes-agent-src:/opt/hermes
     environment:
       - HERMES_HOME=/opt/data
+      - HERMES_INFERENCE_PROVIDER=minimax
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
+      - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
-      - HERMES_DEFAULT_MODEL=${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4-5}
+      - HERMES_DEFAULT_MODEL=${HERMES_DEFAULT_MODEL:-MiniMax-M2.7}
     deploy:
       resources:
         limits:
@@ -47,6 +51,7 @@ services:
     volumes:
       - hermes-home:/home/hermeswebui/.hermes
       - hermes-workspace:/workspace
+      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
       - HERMES_WEBUI_PORT=8787
@@ -55,6 +60,8 @@ services:
       - HERMES_HOME=/home/hermeswebui/.hermes
       - HERMES_CONFIG_PATH=/home/hermeswebui/.hermes/config.yaml
       - HERMES_WEBUI_AGENT_DIR=/opt/hermes
+      - HERMES_WEBUI_BASE_URL=${MINIMAX_BASE_URL:-}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
       # UID/GID must match the volume ownership (10000 from hermes container)
       - WANTED_UID=10000
       - WANTED_GID=10000
@@ -76,6 +83,7 @@ services:
 volumes:
   hermes-home:
   hermes-workspace:
+  hermes-agent-src:
 
 networks:
   hermes-internal:
