@@ -1,0 +1,61 @@
+# docker-compose.yml
+# Hermes Agent + Hermes WebUI
+# Coolify: paste this as a "Docker Compose" service.
+# Set environment variables in Coolify's env panel — do NOT commit secrets here.
+
+services:
+  hermes:
+    build:
+      context: .
+      dockerfile: Dockerfile.hermes
+    restart: unless-stopped
+    volumes:
+      - hermes-home:/root/.hermes
+      - hermes-workspace:/root/workspace
+    environment:
+      # --- Required: set at least one provider key ---
+      # OpenRouter (recommended — gives access to 200+ models)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      # Or use Nous Portal, OpenAI, Anthropic, etc.
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # --- Optional: messaging gateway tokens ---
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      # --- Optional: default model override ---
+      - HERMES_DEFAULT_MODEL=${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4-5}
+    # No ports exposed — webui proxies to hermes via shared volume/network
+    networks:
+      - hermes-internal
+
+  webui:
+    build:
+      context: .
+      dockerfile: Dockerfile.webui
+    restart: unless-stopped
+    depends_on:
+      - hermes
+    volumes:
+      # Share the same ~/.hermes state so webui can read sessions, config, memory
+      - hermes-home:/root/.hermes
+      - hermes-workspace:/root/workspace
+    environment:
+      - HERMES_WEBUI_HOST=0.0.0.0
+      - HERMES_WEBUI_PORT=8787
+      - HERMES_WEBUI_STATE_DIR=/root/.hermes/webui-mvp
+      - HERMES_WEBUI_DEFAULT_WORKSPACE=/root/workspace
+      - HERMES_HOME=/root/.hermes
+      - HERMES_CONFIG_PATH=/root/.hermes/config.yaml
+      # Point webui at the agent install inside the hermes container's volume
+      - HERMES_WEBUI_AGENT_DIR=/opt/hermes-agent
+    ports:
+      - "${WEBUI_PORT:-8787}:8787"
+    networks:
+      - hermes-internal
+
+volumes:
+  hermes-home:
+  hermes-workspace:
+
+networks:
+  hermes-internal:
