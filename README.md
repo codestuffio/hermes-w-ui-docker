@@ -9,7 +9,7 @@ This setup runs two containers:
 - **Hermes Agent** (`nousresearch/hermes-agent`) - The AI agent with memory, skills, and messaging integrations
 - **Hermes WebUI** (`ghcr.io/nesquena/hermes-webui`) - A browser-based interface for interacting with Hermes
 
-Hermes persists only its runtime state via a named volume. WebUI state is ephemeral by default to avoid cross-container permission drift in Coolify.
+Hermes persists runtime state via a named volume. The Hermes source directory is shared to WebUI as read-only for full agent-aware features, while WebUI app state remains ephemeral by default to avoid cross-container permission drift in Coolify.
 
 ## Prerequisites
 
@@ -67,6 +67,7 @@ Do not set `UID` or `GID` in Coolify for this stack. `UID` conflicts with a read
 | Volume | Container Path | What Persists |
 |--------|----------------|---------------|
 | `hermes-home` | `/opt/data` (hermes) | Hermes config, sessions, skills, memory |
+| `hermes-agent-src` | `/opt/hermes` (hermes), `/home/hermeswebui/.hermes/hermes-agent` (webui, read-only) | Hermes source visible to WebUI for model/personality/CLI integration |
 
 ## Security
 
@@ -168,13 +169,14 @@ Use Coolify environment variables as the source of truth for secrets and provide
 │   │   hermes-agent  │      │   hermes-webui  │          │
 │   │  (container)    │◄────►│   (container)   │          │
 │   │                 │      │                 │          │
-│   │    /opt/data    │      │   /tmp state    │          │
-│   └────────┬────────┘      └─────────────────┘          │
+│   │ /opt/data +    │      │   /tmp state +   │          │
+│   │ /opt/hermes    │◄────►│ ro hermes-agent  │          │
+│   └────────┬───────┘      └─────────────────┘          │
 │            │                                             │
-│       hermes-home                                        │
+│   hermes-home + hermes-agent-src                         │
 │            │                                             │
 │   ┌────────┴──────────────────────────────────┐          │
-│   │              Named Volume                 │          │
+│   │             Named Volumes                 │          │
 │   └───────────────────────────────────────────┘          │
 │                                                         │
 │   Port 8787 (host) ──────► webui:8787                   │
