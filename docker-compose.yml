@@ -15,10 +15,10 @@ services:
       retries: 3
       start_period: 60s
     volumes:
-      - hermes-home:/root/.hermes
+      - hermes-home:/opt/data
       - hermes-workspace:/root/workspace
     environment:
-      - HERMES_HOME=/root/.hermes
+      - HERMES_HOME=/opt/data
       # --- Provider API Keys (set at least one) ---
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
@@ -38,9 +38,6 @@ services:
           memory: 256M
     security_opt:
       - no-new-privileges:true
-    read_only: true
-    tmpfs:
-      - /tmp:size=64M,mode=1777
     networks:
       - hermes-internal
 
@@ -82,8 +79,6 @@ services:
         reservations:
           cpus: "0.1"
           memory: 128M
-    security_opt:
-      - no-new-privileges:true
     networks:
       - hermes-internal
 
