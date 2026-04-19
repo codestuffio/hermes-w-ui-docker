@@ -17,13 +17,13 @@ services:
     environment:
       - HERMES_HOME=/opt/data
       - HERMES_INFERENCE_PROVIDER=minimax
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
-      - MINIMAX_BASE_URL=${MINIMAX_BASE_URL:-}
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
-      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
+      - MINIMAX_BASE_URL=${MINIMAX_BASE_URL}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
       - HERMES_DEFAULT_MODEL=${HERMES_DEFAULT_MODEL:-MiniMax-M2.7}
     deploy:
       resources:
@@ -60,13 +60,8 @@ services:
       - HERMES_HOME=/home/hermeswebui/.hermes
       - HERMES_CONFIG_PATH=/home/hermeswebui/.hermes/config.yaml
       - HERMES_WEBUI_AGENT_DIR=/opt/hermes
-      - HERMES_WEBUI_BASE_URL=${MINIMAX_BASE_URL:-}
-      - MINIMAX_API_KEY=${MINIMAX_API_KEY:-}
-      # UID/GID must match the volume ownership (10000 from hermes container)
-      - WANTED_UID=10000
-      - WANTED_GID=10000
-      # Optional: uncomment to password-protect the web UI
-      # - HERMES_WEBUI_PASSWORD=your-secret-password
+      - HERMES_WEBUI_BASE_URL=${MINIMAX_BASE_URL}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
     ports:
       - "${WEBUI_PORT:-8787}:8787"
     deploy:
