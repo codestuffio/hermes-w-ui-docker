@@ -67,7 +67,7 @@ Do not set `UID` or `GID` in Coolify for this stack. `UID` conflicts with a read
 | Volume | Container Path | What Persists |
 |--------|----------------|---------------|
 | `hermes-home` | `/opt/data` (hermes) | Hermes config, sessions, skills, memory |
-| `hermes-agent-src` | `/opt/hermes` (hermes), `/home/hermeswebui/.hermes/hermes-agent` (webui, read-only) | Hermes source visible to WebUI for model/personality/CLI integration |
+| `hermes-agent-src` | `/opt/hermes` (hermes), `/opt/hermes-agent` (webui, read-only) | Hermes source visible to WebUI for model/personality/CLI integration |
 
 ## Security
 
