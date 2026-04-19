@@ -8,34 +8,24 @@ services:
     image: nousresearch/hermes-agent:latest
     container_name: hermes-agent
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "exit 0"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+    command: gateway run
+    ports:
+      - "8642:8642"
     volumes:
       - hermes-home:/opt/data
-      - hermes-workspace:/root/workspace
     environment:
       - HERMES_HOME=/opt/data
-      # --- Provider API Keys (set at least one) ---
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      # --- Messaging gateway tokens ---
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
-      # --- Optional: default model ---
       - HERMES_DEFAULT_MODEL=${HERMES_DEFAULT_MODEL:-openrouter/anthropic/claude-sonnet-4-5}
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 2G
-        reservations:
-          cpus: "0.25"
-          memory: 256M
+          memory: 4G
+          cpus: "2.0"
     security_opt:
       - no-new-privileges:true
     networks:
@@ -47,7 +37,7 @@ services:
     restart: unless-stopped
     depends_on:
       hermes:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8787/health"]
       interval: 30s
@@ -64,9 +54,10 @@ services:
       - HERMES_WEBUI_DEFAULT_WORKSPACE=/workspace
       - HERMES_HOME=/home/hermeswebui/.hermes
       - HERMES_CONFIG_PATH=/home/hermeswebui/.hermes/config.yaml
-      # UID/GID for correct file permissions on mounted volumes
-      - WANTED_UID=${UID:-1000}
-      - WANTED_GID=${GID:-1000}
+      - HERMES_WEBUI_AGENT_DIR=/opt/hermes
+      # UID/GID must match the volume ownership (10000 from hermes container)
+      - WANTED_UID=10000
+      - WANTED_GID=10000
       # Optional: uncomment to password-protect the web UI
       # - HERMES_WEBUI_PASSWORD=your-secret-password
     ports:
