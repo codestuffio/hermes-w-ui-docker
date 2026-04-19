@@ -7,6 +7,7 @@ services:
   hermes:
     image: nousresearch/hermes-agent:latest
     container_name: hermes-agent
+    user: "${UID:-1000}:${GID:-1000}"
     restart: unless-stopped
     command: gateway run
     ports:
@@ -36,6 +37,7 @@ services:
   webui:
     image: ghcr.io/nesquena/hermes-webui:latest
     container_name: hermes-webui
+    user: "${UID:-1000}:${GID:-1000}"
     restart: unless-stopped
     depends_on:
       hermes:
