@@ -60,14 +60,15 @@ Open [http://localhost:8787](http://localhost:8787) in your browser.
 
 *Set at least one provider API key.
 
-Do not set `UID` or `GID` in Coolify for this stack. `UID` conflicts with a readonly shell variable in the WebUI init script.
+Do not set `UID` in Coolify for this stack. `UID` conflicts with a readonly shell variable in the WebUI init script.
+If you need explicit ownership mapping for WebUI init, set `HERMES_UID` and `HERMES_GID` instead (these feed `WANTED_UID`/`WANTED_GID`).
 
 ## Volume Mounts
 
 | Volume | Container Path | What Persists |
 |--------|----------------|---------------|
 | `hermes-home` | `/opt/data` (hermes) | Hermes config, sessions, skills, memory |
-| `hermes-agent-src` | `/opt/hermes` (hermes), `/opt/hermes-agent` (webui, read-only) | Hermes source visible to WebUI for model/personality/CLI integration |
+| `hermes-agent-src` | `/opt/hermes` (hermes), `/home/hermeswebui/.hermes/hermes-agent` (webui) | Hermes source visible to WebUI for model/personality/CLI integration |
 
 ## Security
 
@@ -130,7 +131,7 @@ docker compose ps
 
 ### Permission issues
 
-If you previously set `UID`/`GID` in Coolify, remove them and redeploy.
+If you previously set `UID`/`GID` in Coolify, remove them and redeploy. If needed, use `HERMES_UID`/`HERMES_GID` instead.
 
 If stale volume ownership still blocks startup, reset containers and volumes:
 ```bash
@@ -154,7 +155,7 @@ In Coolify:
 1. Create a new "Docker Compose" deployment
 2. Paste the contents of `docker-compose.yml` into the editor
 3. Set environment variables in the env panel (from `.env.example`)
-4. Do not set `UID`/`GID` env vars
+4. Do not set `UID` env vars (use `HERMES_UID`/`HERMES_GID` if explicit mapping is needed)
 5. Deploy
 
 Use Coolify environment variables as the source of truth for secrets and provider config. Do not rely on `/opt/data/.env`.

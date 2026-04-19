@@ -53,11 +53,13 @@ services:
       - HERMES_WEBUI_DEFAULT_WORKSPACE=/tmp/workspace
       - HERMES_HOME=/tmp/.hermes
       - HERMES_CONFIG_PATH=/tmp/.hermes/config.yaml
-      - HERMES_WEBUI_AGENT_DIR=/opt/hermes-agent
+      - HERMES_WEBUI_AGENT_DIR=/home/hermeswebui/.hermes/hermes-agent
+      - WANTED_UID=${HERMES_UID:-1000}
+      - WANTED_GID=${HERMES_GID:-1000}
       - HERMES_WEBUI_BASE_URL=${MINIMAX_BASE_URL}
       - MINIMAX_API_KEY=${MINIMAX_API_KEY}
     volumes:
-      - hermes-agent-src:/opt/hermes-agent:ro
+      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
     ports:
       - "${WEBUI_PORT:-8787}:8787"
     deploy:
