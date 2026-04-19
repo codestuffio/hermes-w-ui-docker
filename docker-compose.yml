@@ -13,7 +13,6 @@ services:
       - "8642:8642"
     volumes:
       - hermes-home:/opt/data
-      - hermes-agent-src:/opt/hermes
     environment:
       - HERMES_HOME=/opt/data
       - HERMES_INFERENCE_PROVIDER=minimax
@@ -46,18 +45,13 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    volumes:
-      - hermes-home:/home/hermeswebui/.hermes
-      - hermes-workspace:/workspace
-      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
       - HERMES_WEBUI_PORT=8787
-      - HERMES_WEBUI_STATE_DIR=/home/hermeswebui/.hermes/webui-mvp
-      - HERMES_WEBUI_DEFAULT_WORKSPACE=/workspace
-      - HERMES_HOME=/home/hermeswebui/.hermes
-      - HERMES_CONFIG_PATH=/home/hermeswebui/.hermes/config.yaml
-      - HERMES_WEBUI_AGENT_DIR=/opt/hermes
+      - HERMES_WEBUI_STATE_DIR=/tmp/hermes-webui-state
+      - HERMES_WEBUI_DEFAULT_WORKSPACE=/tmp/workspace
+      - HERMES_HOME=/tmp/.hermes
+      - HERMES_CONFIG_PATH=/tmp/.hermes/config.yaml
       - HERMES_WEBUI_BASE_URL=${MINIMAX_BASE_URL}
       - MINIMAX_API_KEY=${MINIMAX_API_KEY}
     ports:
@@ -75,8 +69,6 @@ services:
 
 volumes:
   hermes-home:
-  hermes-workspace:
-  hermes-agent-src:
 
 networks:
   hermes-internal:

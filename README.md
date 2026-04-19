@@ -9,7 +9,7 @@ This setup runs two containers:
 - **Hermes Agent** (`nousresearch/hermes-agent`) - The AI agent with memory, skills, and messaging integrations
 - **Hermes WebUI** (`ghcr.io/nesquena/hermes-webui`) - A browser-based interface for interacting with Hermes
 
-Both containers share volumes for state (`~/.hermes`) and workspace files.
+Hermes persists only its runtime state via a named volume. WebUI state is ephemeral by default to avoid cross-container permission drift in Coolify.
 
 ## Prerequisites
 
@@ -57,17 +57,16 @@ Open [http://localhost:8787](http://localhost:8787) in your browser.
 | `HERMES_DEFAULT_MODEL` | No | `openrouter/anthropic/claude-sonnet-4-5` | Default model |
 | `WEBUI_PORT` | No | `8787` | WebUI port on host |
 | `HERMES_WEBUI_PASSWORD` | No | - | Password-protect the web UI |
-| `UID` | No | `1000` | UID for file permissions |
-| `GID` | No | `1000` | GID for file permissions |
 
 *Set at least one provider API key.
+
+Do not set `UID` or `GID` in Coolify for this stack. `UID` conflicts with a readonly shell variable in the WebUI init script.
 
 ## Volume Mounts
 
 | Volume | Container Path | What Persists |
 |--------|----------------|---------------|
-| `hermes-home` | `/root/.hermes` (hermes), `/home/hermeswebui/.hermes` (webui) | Config, sessions, skills, memory |
-| `hermes-workspace` | `/root/workspace` (hermes), `/workspace` (webui) | User workspace files |
+| `hermes-home` | `/opt/data` (hermes) | Hermes config, sessions, skills, memory |
 
 ## Security
 
@@ -100,7 +99,7 @@ docker compose logs hermes
 docker compose logs webui
 ```
 
-The webui will only start after hermes is healthy (via `depends_on` with `condition: service_healthy`).
+The webui starts after hermes starts (via `depends_on` with `condition: service_started`).
 
 ## Updating
 
@@ -130,9 +129,12 @@ docker compose ps
 
 ### Permission issues
 
-Ensure UID/GID in `.env` matches your user:
+If you previously set `UID`/`GID` in Coolify, remove them and redeploy.
+
+If stale volume ownership still blocks startup, reset containers and volumes:
 ```bash
-id $(whoami)
+docker compose down -v
+docker compose up -d
 ```
 
 ### Reset state
@@ -151,9 +153,10 @@ In Coolify:
 1. Create a new "Docker Compose" deployment
 2. Paste the contents of `docker-compose.yml` into the editor
 3. Set environment variables in the env panel (from `.env.example`)
-4. Deploy
+4. Do not set `UID`/`GID` env vars
+5. Deploy
 
-The `UID` and `GID` should match the user that owns the mounted workspace directory on the host.
+Use Coolify environment variables as the source of truth for secrets and provider config. Do not rely on `/opt/data/.env`.
 
 ## Architecture
 
@@ -165,15 +168,14 @@ The `UID` and `GID` should match the user that owns the mounted workspace direct
 │   │   hermes-agent  │      │   hermes-webui  │          │
 │   │  (container)    │◄────►│   (container)   │          │
 │   │                 │      │                 │          │
-│   │  /root/.hermes  │◄────►│/home/hermeswebui│          │
-│   │  /root/workspace│      │  /.hermes       │          │
-│   └────────┬────────┘      └────────┬────────┘          │
-│            │                        │                    │
-│      hermes-home               hermes-workspace          │
-│            │                        │                    │
-│   ┌────────┴────────────────────────┴────────┐          │
-│   │              Named Volumes               │          │
-│   └──────────────────────────────────────────┘          │
+│   │    /opt/data    │      │   /tmp state    │          │
+│   └────────┬────────┘      └─────────────────┘          │
+│            │                                             │
+│       hermes-home                                        │
+│            │                                             │
+│   ┌────────┴──────────────────────────────────┐          │
+│   │              Named Volume                 │          │
+│   └───────────────────────────────────────────┘          │
 │                                                         │
 │   Port 8787 (host) ──────► webui:8787                   │
 └─────────────────────────────────────────────────────────┘
