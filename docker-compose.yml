@@ -37,7 +37,6 @@ services:
   webui:
     image: ghcr.io/nesquena/hermes-webui:latest
     container_name: hermes-webui
-    user: "${UID:-1000}:${GID:-1000}"
     restart: unless-stopped
     depends_on:
       hermes:
